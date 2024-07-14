@@ -13,9 +13,9 @@ type User struct {
 	Password string `db:"password"`
 }
 
-type UserInterface interface {
+type UserRepository interface {
 	FindByID(ctx context.Context, id int64) (User, error)
-	FindByName(ctx context.Context, username string) (User, error)
+	FindByUserName(ctx context.Context, username string) (User, error)
 }
 
 type UserService interface {
