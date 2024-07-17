@@ -11,11 +11,11 @@ import (
 
 func GetDatabaseConnection(cnf *config.Config) *sql.DB {
 	dsn := fmt.Sprintf(
-		"host=%s"+
-			"port=%s"+
-			"user=%s"+
-			"password=%s"+
-			"dbname=%s"+
+		"host=%s "+
+			"port=%s "+
+			"user=%s "+
+			"password=%s "+
+			"dbname=%s "+
 			"sslmode=disable",
 		cnf.Database.Host,
 		cnf.Database.Port,
