@@ -16,3 +16,7 @@ phone varchar(20),
 username varchar(30),
 password varchar(30)
 )
+
+ALTER TABLE users
+ADD COLUMN email_verified_at TIMESTAMP
+ADD COLUMN email varchar(100)
