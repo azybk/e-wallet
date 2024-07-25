@@ -20,7 +20,7 @@ func NewAuth(app *fiber.App, userService domain.UserService, authMiddleware fibe
 	app.Post("token/generate", handler.GenerateToken)
 	app.Get("token/validate", authMiddleware, handler.ValidateToken)
 	app.Post("user/register", handler.RegisterUser)
-	app.Post("user/validate-otp", handler.ValidateOTP)
+	app.Post("user/validate-otp", handler.ValidateOTP) 
 }
 
 func (a authApi) GenerateToken(ctx *fiber.Ctx) error {

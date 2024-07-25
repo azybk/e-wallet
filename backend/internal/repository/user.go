@@ -6,6 +6,7 @@ import (
 	"e_wallet/backend/domain"
 
 	"github.com/doug-martin/goqu/v9"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userRepository struct {
@@ -37,11 +38,14 @@ func (u userRepository) FindByUserName(ctx context.Context, username string) (us
 }
 
 func (u userRepository) Insert(ctx context.Context, user *domain.User) error {
+
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+
 	executors := u.db.Insert("users").Rows(goqu.Record{
 		"full_name": user.FullName,
 		"phone":     user.Phone,
 		"username":  user.Username,
-		"password":  user.Password,
+		"password":  string(hashPassword),
 		"email":     user.Email,
 	}).Returning("id").Executor()
 
@@ -57,7 +61,9 @@ func (u userRepository) Update(ctx context.Context, user *domain.User) error {
 		Valid: true,
 	}
 
-	executor := u.db.Update("users").Set(goqu.Record{
+	executor := u.db.Update("users").Where(goqu.Ex{
+		"id": user.ID,
+	}).Set(goqu.Record{
 		"full_name":         user.FullName,
 		"phone":             user.Phone,
 		"username":          user.Username,

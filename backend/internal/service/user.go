@@ -79,7 +79,7 @@ func (s userService) Register(ctx context.Context, req dto.UserRegisterReq) (dto
 	}
 
 	user := domain.User{
-		FullName: req.Email,
+		FullName: req.FullName,
 		Phone:    req.Phone,
 		Username: req.Username,
 		Password: req.Password,
