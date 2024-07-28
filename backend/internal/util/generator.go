@@ -1,8 +1,12 @@
 package util
 
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+)
 
 func GenerateRandomString(n int) string {
+	rand.Seed(time.Now().UnixNano())
 	var charsets = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	letters := make([]rune, n)
 
@@ -14,6 +18,7 @@ func GenerateRandomString(n int) string {
 }
 
 func GenerateRandomNumber(n int) string {
+	rand.Seed(time.Now().UnixNano())
 	var charsets = []rune("0123456789")
 	letters := make([]rune, n)
 

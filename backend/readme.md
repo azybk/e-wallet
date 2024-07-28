@@ -20,3 +20,22 @@ password varchar(30)
 ALTER TABLE users
 ADD COLUMN email_verified_at TIMESTAMP
 ADD COLUMN email varchar(100)
+
+create table account
+(
+    id serial primary key,
+    user_id int,
+    account_number varchar(50),
+    balance real
+)
+
+create table transaction
+(
+    id serial primary key,
+    account_id int,
+    sof_number varchar(50),
+    dof_number varchar(50),
+    transaction_type char,
+    amount real,
+    transaction_datetime timestamp
+)
