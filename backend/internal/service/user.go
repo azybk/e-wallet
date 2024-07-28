@@ -6,7 +6,6 @@ import (
 	"e_wallet/backend/dto"
 	"e_wallet/backend/internal/util"
 	"encoding/json"
-	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -15,12 +14,14 @@ import (
 type userService struct {
 	userRepository  domain.UserRepository
 	cacheRepository domain.CacheRepository
+	emailService    domain.EmailService
 }
 
-func NewUser(userRepository domain.UserRepository, cacheRepository domain.CacheRepository) domain.UserService {
+func NewUser(userRepository domain.UserRepository, cacheRepository domain.CacheRepository, emailService domain.EmailService) domain.UserService {
 	return &userService{
 		userRepository:  userRepository,
 		cacheRepository: cacheRepository,
+		emailService:    emailService,
 	}
 }
 
@@ -36,6 +37,10 @@ func (s userService) Authenticate(ctx context.Context, req dto.AuthReq) (dto.Aut
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
+		return dto.AuthRes{}, domain.ErrAuthFailed
+	}
+
+	if !user.EmailVerifiedAtDB.Valid {
 		return dto.AuthRes{}, domain.ErrAuthFailed
 	}
 
@@ -94,7 +99,7 @@ func (s userService) Register(ctx context.Context, req dto.UserRegisterReq) (dto
 	otpCode := util.GenerateRandomNumber(4)
 	referenceId := util.GenerateRandomString(16)
 
-	log.Printf("your OTP: %s", otpCode)
+	s.emailService.Send(req.Email, "OTP Code", "OTP anda "+otpCode)
 
 	_ = s.cacheRepository.Set("otp:"+referenceId, []byte(otpCode))
 	_ = s.cacheRepository.Set("user-ref:"+referenceId, []byte(user.Username))
