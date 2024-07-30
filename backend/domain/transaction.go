@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"e_wallet/backend/dto"
 	"time"
 )
 
@@ -17,4 +18,9 @@ type Transaction struct {
 
 type TransactionRepository interface {
 	Insert(ctx context.Context, transaction *Transaction) error
+}
+
+type TransactionService interface{
+	TransferInquiry(ctx context.Context, req dto.TransferInquiryReq) (dto.TransferInquiryRes, error)
+	TransferExecute(ctx context.Context, req dto.TransferExecuteReq) error
 }
