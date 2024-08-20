@@ -26,7 +26,7 @@ func (t transferApi) TransferInquiry(ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(400).JSON(dto.Response{
-			Message: "Bad Request",
+			Message: err.Error(),
 		})
 	}
 

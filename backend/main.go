@@ -14,15 +14,16 @@ import (
 func main() {
 	cnf := config.Get()
 	dbConnection := component.GetDatabaseConnection(cnf)
-	cacheConnection := component.GetCacheConnection()
+	// cacheConnection := component.GetCacheConnection()	with bigCache
+	cacheConection := repository.NewRedisClient(cnf)
 
 	userRepository := repository.NewUser(dbConnection)
 	accountRepository := repository.NewAccount(dbConnection)
 	transactionRepository := repository.NewTransaction(dbConnection)
 
 	emailService := service.NewEmail(cnf)
-	userService := service.NewUser(userRepository, cacheConnection, emailService)
-	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConnection)
+	userService := service.NewUser(userRepository, cacheConection, emailService)
+	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection)
 
 	authMiddleware := middleware.Authenticate(userService)
 	
