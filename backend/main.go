@@ -20,16 +20,19 @@ func main() {
 	userRepository := repository.NewUser(dbConnection)
 	accountRepository := repository.NewAccount(dbConnection)
 	transactionRepository := repository.NewTransaction(dbConnection)
+	notificationRepository := repository.NewNotification(dbConnection)
 
 	emailService := service.NewEmail(cnf)
 	userService := service.NewUser(userRepository, cacheConection, emailService)
-	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection)
+	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationRepository)
+	notificationService := service.NewNotification(notificationRepository)
 
 	authMiddleware := middleware.Authenticate(userService)
 	
 	app := fiber.New()
 	api.NewAuth(app, userService, authMiddleware)
 	api.NewTransfer(app, authMiddleware, transactionService)
+	api.NewNotification(app, authMiddleware, notificationService)
 
 	_ = app.Listen(cnf.Server.Host + ":" + cnf.Server.Port)
 }

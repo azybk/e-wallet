@@ -44,7 +44,7 @@ go get github.com/redis/go-redis/v9
 
 CREATE TABLE notifications
 (
-id INT PRIMARY KEY,
+id serial PRIMARY KEY,
 user_id INT NOT NULL,
 title TEXT NOT NULL,
 body TEXT NOT NULL,

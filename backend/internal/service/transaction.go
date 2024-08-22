@@ -6,6 +6,7 @@ import (
 	"e_wallet/backend/dto"
 	"e_wallet/backend/internal/util"
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -13,16 +14,19 @@ type transactionService struct {
 	accountRepository domain.AccountRepository
 	transactionRepository domain.TransactionRepository
 	cacheRepository domain.CacheRepository
+	notificationRepository domain.NotificationRepository
 }
 
 func NewTransaction(accountRepository domain.AccountRepository,
 	transactionRepository domain.TransactionRepository,
-	cacheRepository domain.CacheRepository) domain.TransactionService {
+	cacheRepository domain.CacheRepository,
+	notificationRepository domain.NotificationRepository) domain.TransactionService {
 
 	return &transactionService {
 		accountRepository: accountRepository,
 		transactionRepository: transactionRepository,
 		cacheRepository: cacheRepository,
+		notificationRepository: notificationRepository,
 	}
 }
 
@@ -123,5 +127,29 @@ func (t transactionService) TransferExecute(ctx context.Context, req dto.Transfe
 		return err
 	}
 
+	go t.notificationAfterTransfer(myAccount, dofAccount, reqInq.Amount)
 	return nil
+}
+
+func (t transactionService) notificationAfterTransfer(sofAccount domain.Account, dofAccount domain.Account, amount float64) {
+	notificationSender := domain.Notification{
+		UserId: sofAccount.UserId,
+		Title: "Transfer berhasil",
+		Body: fmt.Sprintf("Transfer sejumlah %.2f berhasil", amount),
+		IsRead: 0,
+		Status: 1,
+		CreatedAt: time.Now(),
+	}
+
+	notificationReceiver := domain.Notification{
+		UserId: dofAccount.UserId,
+		Title: "Dana diterima",
+		Body: fmt.Sprintf("Dana diterima senilai %.2f", amount),
+		IsRead: 0,
+		Status: 1,
+		CreatedAt: time.Now(),
+	}
+	
+	_ = t.notificationRepository.Insert(context.Background(), &notificationSender)
+	_ = t.notificationRepository.Insert(context.Background(), &notificationReceiver)
 }
