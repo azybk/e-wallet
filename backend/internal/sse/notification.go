@@ -27,9 +27,6 @@ func (n notificationSse) StreamNotification(ctx *fiber.Ctx) error {
 	user := ctx.Locals("x-user").(dto.UserData)
 	n.hub.NotificationChannel[user.ID] = make(chan dto.NotificationData)
 	
-	fmt.Println("channel")
-	fmt.Println(n.hub.NotificationChannel[user.ID])
-
 	ctx.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
 
 		event := fmt.Sprintf("event: %s\n" +
