@@ -27,11 +27,13 @@ func main() {
 	accountRepository := repository.NewAccount(dbConnection)
 	transactionRepository := repository.NewTransaction(dbConnection)
 	notificationRepository := repository.NewNotification(dbConnection)
+	templateRepository := repository.NewTemplate(dbConnection)
 
 	emailService := service.NewEmail(cnf)
 	userService := service.NewUser(userRepository, cacheConection, emailService)
-	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationRepository, hub)
-	notificationService := service.NewNotification(notificationRepository)
+	notificationService := service.NewNotification(notificationRepository, templateRepository, hub)
+	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationService)
+	// transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationRepository, hub)
 
 	authMiddleware := middleware.Authenticate(userService)
 	

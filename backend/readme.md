@@ -52,3 +52,10 @@ status INT NOT NULL,
 is_read INT NOT NULL,
 created_at TIMESTAMP NOT NULL
 )
+
+create table template
+(
+code varchar(100) PRIMARY KEY,
+title varchar(100),
+body text
+)
