@@ -59,3 +59,12 @@ code varchar(100) PRIMARY KEY,
 title varchar(100),
 body text
 )
+
+create table topup
+(
+id varchar(100) not null primary key,
+user_id int,
+amount real,
+status int default 0,
+snap_url varchar(255)
+)
