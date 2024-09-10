@@ -15,3 +15,7 @@ type TopUpRepository interface {
 	Insert(ctx context.Context, t *TopUp) error
 	Update(ctx context.Context, t *TopUp) error
 }
+
+type TopUpService interface {
+	ConfirmedTopUp(ctx context.Context, id string) error
+}
