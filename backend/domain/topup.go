@@ -1,6 +1,9 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"e_wallet/backend/dto"
+)
 
 type TopUp struct {
 	ID      string  `db:"id"`
@@ -18,4 +21,5 @@ type TopUpRepository interface {
 
 type TopUpService interface {
 	ConfirmedTopUp(ctx context.Context, id string) error
+	InitializeTopUp(ctx context.Context, req dto.TopUpReq) (dto.TopUpRes, error)
 }
