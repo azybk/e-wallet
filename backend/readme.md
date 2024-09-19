@@ -60,6 +60,10 @@ title varchar(100),
 body text
 )
 
+INSERT INTO template VALUES('TRANSFER', 'Transfer Berhasil (Sukses)', 'Transfer sejumlah {{ .amount }} berhasil');
+INSERT INTO template VALUES('TRANSFER_DEST', 'Dana Diterima', 'Dana diterima senilai {{ .amount }}');
+INSERT INTO template VALUES('TOPUP_SUCCESS', 'Topup Diterima', 'Topup {{ .amount }} berhasil diterima');
+
 create table topup
 (
 id varchar(100) not null primary key,
