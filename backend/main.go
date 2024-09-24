@@ -20,7 +20,7 @@ func main() {
 	cacheConection := repository.NewRedisClient(cnf)
 
 	hub := &dto.Hub{
-		NotificationChannel: map[int64] chan dto.NotificationData{},
+		NotificationChannel: map[int64]chan dto.NotificationData{},
 	}
 
 	userRepository := repository.NewUser(dbConnection)
@@ -28,19 +28,23 @@ func main() {
 	transactionRepository := repository.NewTransaction(dbConnection)
 	notificationRepository := repository.NewNotification(dbConnection)
 	templateRepository := repository.NewTemplate(dbConnection)
+	topupRepository := repository.NewTopUp(dbConnection)
 
 	emailService := service.NewEmail(cnf)
 	userService := service.NewUser(userRepository, cacheConection, emailService)
 	notificationService := service.NewNotification(notificationRepository, templateRepository, hub)
 	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationService)
 	// transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationRepository, hub)
+	midtransService := service.NewMidtransService(cnf)
+	topupService := service.NewTopUp(notificationService, midtransService, topupRepository, accountRepository)
 
 	authMiddleware := middleware.Authenticate(userService)
-	
+
 	app := fiber.New()
 	api.NewAuth(app, userService, authMiddleware)
 	api.NewTransfer(app, authMiddleware, transactionService)
 	api.NewNotification(app, authMiddleware, notificationService)
+	api.NewTopUp(app, authMiddleware, topupService)
 
 	sse.NewNotification(app, authMiddleware, hub)
 

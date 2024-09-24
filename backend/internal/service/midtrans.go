@@ -12,14 +12,13 @@ import (
 )
 
 type midtransService struct {
-	client snap.Client
+	client         snap.Client
 	midtransConfig config.Midtrans
-	topUpService domain.TopUpService
 }
 
-func NewMidtransService(cnf *config.Config, topUpService domain.TopUpService) domain.MidtransService {
+func NewMidtransService(cnf *config.Config) domain.MidtransService {
 	var client snap.Client
-	
+
 	envi := midtrans.Sandbox
 	if cnf.Midtrans.IsProd {
 		envi = midtrans.Production
@@ -28,18 +27,17 @@ func NewMidtransService(cnf *config.Config, topUpService domain.TopUpService) do
 	client.New(cnf.Midtrans.Key, envi)
 
 	return &midtransService{
-		client: client,
+		client:         client,
 		midtransConfig: cnf.Midtrans,
-		topUpService: topUpService,
 	}
 }
 
 func (m midtransService) GenerateSnapURL(ctx context.Context, t *domain.TopUp) error {
-	req := & snap.Request {
+	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-		OrderID:  t.ID,
-		GrossAmt: int64(t.Amount),
-		}, 
+			OrderID:  t.ID,
+			GrossAmt: int64(t.Amount),
+		},
 	}
 
 	snapResp, err := m.client.CreateTransaction(req)
@@ -51,9 +49,9 @@ func (m midtransService) GenerateSnapURL(ctx context.Context, t *domain.TopUp) e
 	return nil
 }
 
-func (m midtransService) VerifyPayment(ctx context.Context, data map[string] interface{}) error {
+func (m midtransService) VerifyPayment(ctx context.Context, data map[string]interface{}) (bool, error) {
 	var client coreapi.Client
-	
+
 	envi := midtrans.Sandbox
 	if m.midtransConfig.IsProd {
 		envi = midtrans.Production
@@ -65,13 +63,13 @@ func (m midtransService) VerifyPayment(ctx context.Context, data map[string] int
 	orderId, exists := data["order_id"].(string)
 	if !exists {
 		// do something when key `order_id` not found
-		return errors.New("invalid payload")
+		return false, errors.New("invalid payload")
 	}
 
 	// 4. Check transaction to Midtrans with param orderId
 	transactionStatusResp, e := client.CheckTransaction(orderId)
 	if e != nil {
-		return e
+		return false, e
 
 	} else {
 
@@ -83,11 +81,11 @@ func (m midtransService) VerifyPayment(ctx context.Context, data map[string] int
 					// e.g: 'Payment status challenged. Please take action on your Merchant Administration Portal
 				} else if transactionStatusResp.FraudStatus == "accept" {
 					// TODO set transaction status on your database to 'success'
-					m.topUpService.ConfirmedTopUp(ctx, orderId)
+					return true, nil
 				}
 			} else if transactionStatusResp.TransactionStatus == "settlement" {
 				// TODO set transaction status on your databaase to 'success'
-				m.topUpService.ConfirmedTopUp(ctx, orderId)
+				return true, nil
 			} else if transactionStatusResp.TransactionStatus == "deny" {
 				// TODO you can ignore 'deny', because most of the time it allows payment retries
 				// and later can become success
@@ -98,5 +96,5 @@ func (m midtransService) VerifyPayment(ctx context.Context, data map[string] int
 			}
 		}
 	}
-	return nil
+	return false, nil
 }
