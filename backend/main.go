@@ -36,7 +36,7 @@ func main() {
 	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationService)
 	// transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationRepository, hub)
 	midtransService := service.NewMidtransService(cnf)
-	topupService := service.NewTopUp(notificationService, midtransService, topupRepository, accountRepository)
+	topupService := service.NewTopUp(notificationService, midtransService, topupRepository, accountRepository, transactionRepository)
 
 	authMiddleware := middleware.Authenticate(userService)
 
@@ -45,6 +45,7 @@ func main() {
 	api.NewTransfer(app, authMiddleware, transactionService)
 	api.NewNotification(app, authMiddleware, notificationService)
 	api.NewTopUp(app, authMiddleware, topupService)
+	api.NewMidtrans(app, midtransService, topupService)
 
 	sse.NewNotification(app, authMiddleware, hub)
 

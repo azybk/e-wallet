@@ -6,6 +6,7 @@ import (
 	"e_wallet/backend/dto"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -15,18 +16,21 @@ type topUpService struct {
 	midtransService domain.MidtransService
 	topUpRepository domain.TopUpRepository
 	accountRepository domain.AccountRepository
+	transactionRepository domain.TransactionRepository
 }
 
 func NewTopUp(notificationService domain.NotificationService, 
 	midtransService domain.MidtransService,
 	topUpRepository domain.TopUpRepository,
-	accountRepository domain.AccountRepository) domain.TopUpService {
+	accountRepository domain.AccountRepository,
+	transactionRepository domain.TransactionRepository) domain.TopUpService {
 
 		return &topUpService{
 			notificationService: notificationService,
 			midtransService: midtransService,
 			topUpRepository: topUpRepository,
 			accountRepository: accountRepository,
+			transactionRepository: transactionRepository,
 		}
 }
 
@@ -70,6 +74,18 @@ func (t topUpService) ConfirmedTopUp(ctx context.Context, id string) error {
 
 	if account == (domain.Account{}) {
 		return domain.ErrAccountNotFound
+	}
+
+	err = t.transactionRepository.Insert(ctx, &domain.Transaction{
+		AccountId: account.ID,
+		SofNumber: "00",
+		DofNumber: account.AccountNumber,
+		TransactionType: "C",
+		Amount: topup.Amount,
+		TransactionDatetime: time.Now(),
+	})
+	if err != nil {
+		return err
 	}
 
 	account.Balance += topup.Amount

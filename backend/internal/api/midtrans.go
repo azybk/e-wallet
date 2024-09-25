@@ -33,7 +33,7 @@ func (m midtransApi) paymentHandlerNotification(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(400)
 	}
 
-	success, _ := m.midtransService.VerifyPayment(ctx.Context(), notificationPayload)
+	success, _ := m.midtransService.VerifyPayment(ctx.Context(), orderId)
 	if success {
 		_ = m.topupService.ConfirmedTopUp(ctx.Context(), orderId)
 

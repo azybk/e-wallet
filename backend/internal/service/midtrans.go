@@ -4,7 +4,6 @@ import (
 	"context"
 	"e_wallet/backend/domain"
 	"e_wallet/backend/internal/config"
-	"errors"
 
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/coreapi"
@@ -12,23 +11,19 @@ import (
 )
 
 type midtransService struct {
-	client         snap.Client
-	midtransConfig config.Midtrans
+	config config.Midtrans
+	envi midtrans.EnvironmentType
 }
 
 func NewMidtransService(cnf *config.Config) domain.MidtransService {
-	var client snap.Client
-
 	envi := midtrans.Sandbox
 	if cnf.Midtrans.IsProd {
 		envi = midtrans.Production
 	}
 
-	client.New(cnf.Midtrans.Key, envi)
-
 	return &midtransService{
-		client:         client,
-		midtransConfig: cnf.Midtrans,
+		config: cnf.Midtrans,
+		envi: envi,
 	}
 }
 
@@ -40,7 +35,10 @@ func (m midtransService) GenerateSnapURL(ctx context.Context, t *domain.TopUp) e
 		},
 	}
 
-	snapResp, err := m.client.CreateTransaction(req)
+	var client snap.Client
+	client.New(m.config.Key, m.envi)
+
+	snapResp, err := client.CreateTransaction(req)
 	if err != nil {
 		return err
 	}
@@ -49,22 +47,9 @@ func (m midtransService) GenerateSnapURL(ctx context.Context, t *domain.TopUp) e
 	return nil
 }
 
-func (m midtransService) VerifyPayment(ctx context.Context, data map[string]interface{}) (bool, error) {
+func (m midtransService) VerifyPayment(ctx context.Context, orderId string) (bool, error) {
 	var client coreapi.Client
-
-	envi := midtrans.Sandbox
-	if m.midtransConfig.IsProd {
-		envi = midtrans.Production
-	}
-
-	client.New(m.midtransConfig.Key, envi)
-
-	// 3. Get order-id from payload
-	orderId, exists := data["order_id"].(string)
-	if !exists {
-		// do something when key `order_id` not found
-		return false, errors.New("invalid payload")
-	}
+	client.New(m.config.Key, m.envi)
 
 	// 4. Check transaction to Midtrans with param orderId
 	transactionStatusResp, e := client.CheckTransaction(orderId)

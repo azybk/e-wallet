@@ -29,6 +29,7 @@ func (r repositoryTopUp) FindById(ctx context.Context, id string) (topup domain.
 
 func (r repositoryTopUp) Insert(ctx context.Context, t *domain.TopUp) error {
 	executor := r.db.Insert("topup").Rows(goqu.Record{
+		"id": t.ID,
 		"user_id": t.UserID,
 		"amount": t.Amount,
 		"status": t.Status,
