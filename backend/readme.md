@@ -72,3 +72,10 @@ amount real,
 status int default 0,
 snap_url varchar(255)
 )
+
+CREATE TABLE factors
+(
+id SERIAL PRIMARY KEY,
+user_id INT,
+pin VARCHAR(100)
+)
