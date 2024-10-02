@@ -29,6 +29,7 @@ func main() {
 	notificationRepository := repository.NewNotification(dbConnection)
 	templateRepository := repository.NewTemplate(dbConnection)
 	topupRepository := repository.NewTopUp(dbConnection)
+	factorRepository := repository.NewFactor(dbConnection)
 
 	emailService := service.NewEmail(cnf)
 	userService := service.NewUser(userRepository, cacheConection, emailService)
@@ -37,12 +38,13 @@ func main() {
 	// transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConection, notificationRepository, hub)
 	midtransService := service.NewMidtransService(cnf)
 	topupService := service.NewTopUp(notificationService, midtransService, topupRepository, accountRepository, transactionRepository)
+	factorService := service.NewFactor(factorRepository)
 
 	authMiddleware := middleware.Authenticate(userService)
 
 	app := fiber.New()
 	api.NewAuth(app, userService, authMiddleware)
-	api.NewTransfer(app, authMiddleware, transactionService)
+	api.NewTransfer(app, authMiddleware, transactionService, factorService)
 	api.NewNotification(app, authMiddleware, notificationService)
 	api.NewTopUp(app, authMiddleware, topupService)
 	api.NewMidtrans(app, midtransService, topupService)

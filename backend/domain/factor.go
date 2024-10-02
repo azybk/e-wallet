@@ -8,7 +8,7 @@ import (
 type Factor struct {
 	ID     int64  `db:"id"`
 	UserID int64  `db:"user_id"`
-	pin    string `db:"pin"`
+	PIN    string `db:"pin"`
 }
 
 type FactorRepository interface {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"e_wallet/backend/domain"
 	"e_wallet/backend/dto"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type factorService struct {
@@ -25,4 +27,11 @@ func (f factorService) ValidatePIN(ctx context.Context, req dto.ValidatePinReq) 
 	if factor == (domain.Factor{}) {
 		return domain.ErrPinInvalid
 	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(factor.PIN), []byte(req.PIN))
+	if err != nil {
+		return domain.ErrPinInvalid
+	}
+
+	return nil
 }
